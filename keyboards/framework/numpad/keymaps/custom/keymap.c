@@ -1,7 +1,18 @@
-// Copyright 2022-2023 Framework Computer
-// SPDX-License-Identifier: GPL-2.0-or-later
-
 #include QMK_KEYBOARD_H
+
+enum combos {
+    COMBO_P0_PPLS,  // Hold P0 + P+ to toggle backlight brightness
+    COMBO_P0_PENT,  // Hold P0 + PEnter to cycle through backlight levels
+    COMBO_LENGTH
+};
+
+const uint16_t PROGMEM p0_ppls_combo[] = {KC_P0, KC_PPLS, COMBO_END};
+const uint16_t PROGMEM p0_pent_combo[] = {KC_P0, KC_PENT, COMBO_END};
+
+combo_t key_combos[] = {
+    [COMBO_P0_PPLS] = COMBO(p0_ppls_combo, BL_BRTG),
+    [COMBO_P0_PENT] = COMBO(p0_pent_combo, BL_STEP),
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      /*
@@ -33,35 +44,32 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * Numlock keys are passed through to the number layer,
      * and automatically remapped by the OS.
      *         ┌────┬────┬────┬────┐
-     *  4 keys │    │    │    │    │
+     *  4 keys │    │Comp│    │    │
      *         ├────┼────┼────┼────┤
      *  4 keys │    │    │    │    │
      *         ├────┼────┼────┼────┤
-     *  3 keys │Home│ ↑  │PgUp│BL  │
-     *         ├────┼────┼────┤Brtg│
+     *  3 keys │Home│ ↑  │PgUp│    │
+     *         ├────┼────┼────┤    │
      *  4 keys │ ←  │    │ →  │    |
      *         ├────┼────┼────┼────┤
-     *  3 keys │End │ ↓  │PdDn│BL  │
-     *         ├────┴────┼────┤Step│
+     *  3 keys │End │ ↓  │PdDn│    │
+     *         ├────┴────┼────┤    │
      *  3 keys │ Insert  │Del │    │
      *         └─────────┴────┴────┴
      * 21 total
      */
     [_FN] = LAYOUT(
-        _______, _______, _______, _______,
+        _______, KC_MYCM, _______, _______,
         _______, _______, _______, _______,
         _______, _______, _______,
-        _______, _______, _______, BL_BRTG,
+        _______, _______, _______, _______,
         _______, _______, _______,
-            _______,      _______, BL_STEP
-
+            _______,      _______, _______
     )
-
 };
 
 bool led_update_user(led_t led_state) {
-    // Change layer if numlock state changes, either triggered by OS or
-    // by numlock key on this keyboard
+    // Change layer if numlock state changes, either triggered by OS or by numlock key on this keyboard
     if (led_state.num_lock) {
         layer_off(_FN);
     } else {
@@ -69,3 +77,20 @@ bool led_update_user(led_t led_state) {
     }
     return true;
 }
+
+#ifdef VIA_ENABLE
+void via_custom_value_command_kb(uint8_t *data, uint8_t length) {
+    // data = [ command_id, channel_id, value_id, value_data ]
+    // data[0] = Command ID (0x07: id_custom_set_value, 0x08: id_custom_get_value, 0x09: id_custom_save)
+    // data[1] = Channel ID (0x00: id_custom_channel is typical for custom user data)
+
+    if ((data[0] == id_custom_set_value || data[0] == id_custom_get_value) && data[1] == id_custom_channel) {
+        // Leave `data` unmodified to echo the payload back to host.
+        // VIA calls raw_hid_send(data, length) immediately after this function returns.
+        return;
+    }
+
+    // flag unhandled channels so VIA drops them
+    data[0] = id_unhandled;
+}
+#endif
