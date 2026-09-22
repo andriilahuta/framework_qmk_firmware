@@ -3,15 +3,18 @@
 enum combos {
     COMBO_P0_PPLS,  // Hold P0 + P+ to toggle backlight brightness
     COMBO_P0_PENT,  // Hold P0 + PEnter to cycle through backlight levels
+    COMBO_P0_KEY_LOCK,  // Hold P0 + * to toggle key lock
     COMBO_LENGTH
 };
 
 const uint16_t PROGMEM p0_ppls_combo[] = {KC_P0, KC_PPLS, COMBO_END};
 const uint16_t PROGMEM p0_pent_combo[] = {KC_P0, KC_PENT, COMBO_END};
+const uint16_t PROGMEM p0_key_lock_combo[] = {KC_P0, KC_PAST, COMBO_END};
 
 combo_t key_combos[] = {
     [COMBO_P0_PPLS] = COMBO(p0_ppls_combo, BL_BRTG),
     [COMBO_P0_PENT] = COMBO(p0_pent_combo, BL_STEP),
+    [COMBO_P0_KEY_LOCK] = COMBO(p0_key_lock_combo, QK_LOCK),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
