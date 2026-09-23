@@ -126,13 +126,20 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 
 void leader_end_user(void) {
     if (leader_sequence_two_keys(KC_A, KC_A)) {
-        // a, a => Ctrl+A, Ctrl+C
+        // Select all and copy
+        // a a => Ctrl+A -> Ctrl+C
         SEND_STRING(SS_LCTL("a") SS_LCTL("c"));
+    }
+    else if (leader_sequence_two_keys(KC_DEL, KC_DEL)) {
+        // Delete the entire line
+        // del del => Home -> Shift+End -> Backspace -> Backspace (removes line break)
+        SEND_STRING(SS_TAP(X_HOME) SS_LSFT(SS_TAP(X_END)) SS_TAP(X_BSPC) SS_TAP(X_BSPC));
     }
 
     // Markdown
     else if (leader_sequence_two_keys(KC_GRAVE, KC_GRAVE)) {
-        // ` ` => Markdown triple backtick code block with cursor in center
+        // Markdown triple backtick code block with cursor in center
+        // ` ` => ```\n```
         SEND_STRING("```" SS_TAP(X_ENTER) SS_TAP(X_ENTER) "```" SS_TAP(X_UP));
     }
 }

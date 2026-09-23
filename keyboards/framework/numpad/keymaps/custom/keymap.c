@@ -1,20 +1,23 @@
 #include QMK_KEYBOARD_H
 
 enum combos {
-    COMBO_P0_PPLS,  // Hold P0 + P+ to toggle backlight brightness
-    COMBO_P0_PENT,  // Hold P0 + PEnter to cycle through backlight levels
-    COMBO_P0_KEY_LOCK,  // Hold P0 + * to toggle key lock
+    COMBO_P0_P1,  // Hold 0 + 1 to trigger leader key
+    COMBO_P0_PAST,  // Hold 0 + * to toggle key lock
+    COMBO_P0_PPLS,  // Hold 0 + + to toggle backlight breathing
+    COMBO_P0_PENT,  // Hold 0 + Enter to cycle backlight levels
     COMBO_LENGTH
 };
 
+const uint16_t PROGMEM p0_p1_combo[] = {KC_P0, KC_P1, COMBO_END};
+const uint16_t PROGMEM p0_past_combo[] = {KC_P0, KC_PAST, COMBO_END};
 const uint16_t PROGMEM p0_ppls_combo[] = {KC_P0, KC_PPLS, COMBO_END};
 const uint16_t PROGMEM p0_pent_combo[] = {KC_P0, KC_PENT, COMBO_END};
-const uint16_t PROGMEM p0_key_lock_combo[] = {KC_P0, KC_PAST, COMBO_END};
 
 combo_t key_combos[] = {
+    [COMBO_P0_P1] = COMBO(p0_p1_combo, QK_LEAD),
+    [COMBO_P0_PAST] = COMBO(p0_past_combo, QK_LOCK),
     [COMBO_P0_PPLS] = COMBO(p0_ppls_combo, BL_BRTG),
     [COMBO_P0_PENT] = COMBO(p0_pent_combo, BL_STEP),
-    [COMBO_P0_KEY_LOCK] = COMBO(p0_key_lock_combo, QK_LOCK),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -70,6 +73,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             _______,      _______, _______
     )
 };
+
+void leader_end_user(void) {
+    if (leader_sequence_two_keys(KC_PDOT, KC_PDOT)) {
+        // Delete the entire line
+        // del del => Home -> Shift+End -> Backspace -> Backspace (removes line break)
+        SEND_STRING(SS_TAP(X_HOME) SS_LSFT(SS_TAP(X_END)) SS_TAP(X_BSPC) SS_TAP(X_BSPC));
+    }
+}
 
 bool led_update_user(led_t led_state) {
     // Change layer if numlock state changes, either triggered by OS or by numlock key on this keyboard
